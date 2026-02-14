@@ -1,13 +1,37 @@
 // Game Configuration
 const isMobile = window.innerWidth <= 600;
-// On mobile (iPhone), calculate height to match screen aspect ratio based on fixed width 1024
-// On desktop/iPad, use fixed 768 height (4:3 ratio)
+// On mobile, if we force landscape via CSS rotation, 
+// the "Game Width" effectively becomes the phone's HEIGHT, and "Game Height" is phone's WIDTH.
+// But the browser reports innerWidth/innerHeight based on current viewport.
+// If we rotate 90deg, we are swapping them conceptually.
+
+// Let's assume standard landscape dimensions
 const fixedHeight = 768;
-const mobileHeight = isMobile ? (1024 * window.innerHeight / window.innerWidth) : fixedHeight;
+let gameWidth = 1024;
+let gameHeight = fixedHeight;
+
+if (isMobile) {
+    // We want the game to render as if it's on a landscape screen.
+    // The CSS rotates it to fit the portrait screen.
+    // So internal game resolution should match the aspect ratio of (Height / Width) of the phone.
+    // e.g. Phone is 400w x 800h. 
+    // Rotated Game should be 800w x 400h (conceptually).
+    // We'll keep width fixed at 1024 for consistency.
+    // Then height should be 1024 * (400/800) = 512.
+    
+    // Width of game = Phone Height
+    // Height of game = Phone Width
+    
+    // We use window.innerHeight for "Width" ratio and window.innerWidth for "Height" ratio relative to 1024
+    // Ratio = innerWidth / innerHeight (Small / Large)
+    
+    gameHeight = 1024 * (window.innerWidth / window.innerHeight);
+    // This gives us a wider, shorter view (Landscape aspect ratio)
+}
 
 const CONFIG = {
     GAME_WIDTH: 1024,
-    GAME_HEIGHT: mobileHeight,
+    GAME_HEIGHT: gameHeight,
     PLAYER_SPEED: 8, // Slightly faster for wider screen
     INITIAL_SCROLL_SPEED: 5,
     MAX_SPEED: 12,
@@ -437,7 +461,11 @@ class Game {
     }
     
     createPlayer() {
-        this.player = new Player(CONFIG.GAME_WIDTH / 2, 100);
+        // Position player relative to height. 
+        // In landscape mode, we have less vertical space, so keep him somewhat high (100 is ok)
+        // But let's center him a bit more if height is small.
+        const playerY = isMobile ? CONFIG.GAME_HEIGHT * 0.25 : 100;
+        this.player = new Player(CONFIG.GAME_WIDTH / 2, playerY);
         this.playerGroup.appendChild(this.player.element);
     }
 
@@ -1064,7 +1092,9 @@ class Player {
         this.vx = 0;
         this.isJumping = false;
         this.jumpStartTime = 0;
-        this.scale = 0.8; // Reduced size as requested
+        // Increase scale for mobile to make him more visible
+        this.baseScale = isMobile ? 1.2 : 0.8; 
+        this.scale = this.baseScale;
         this.angle = 0;
         this.bobOffset = 0;
         this.frameCount = 0;
@@ -1151,6 +1181,19 @@ class Player {
         gogglesLens.setAttribute("width", 22); gogglesLens.setAttribute("height", 8);
         gogglesLens.setAttribute("rx", 1); gogglesLens.setAttribute("fill", "#ff5722");
         this.bodyGroup.appendChild(gogglesLens);
+        
+        // Name Tag "Andi"
+        const nameText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        nameText.setAttribute("x", 0);
+        nameText.setAttribute("y", -90);
+        nameText.setAttribute("text-anchor", "middle");
+        nameText.setAttribute("fill", "#1a237e");
+        nameText.setAttribute("font-family", "Arial");
+        nameText.setAttribute("font-weight", "bold");
+        nameText.setAttribute("font-size", "24");
+        nameText.textContent = "Andi";
+        this.bodyGroup.appendChild(nameText);
+        
         return g;
     }
     
@@ -1185,10 +1228,10 @@ class Player {
             const progress = (now - this.jumpStartTime) / CONFIG.JUMP_DURATION;
             if (progress >= 1) {
                 this.isJumping = false;
-                this.scale = 0.8;
+                this.scale = this.baseScale;
             } else {
                 const jumpHeight = Math.sin(progress * Math.PI);
-                this.scale = 0.8 + (jumpHeight * 0.4);
+                this.scale = this.baseScale + (jumpHeight * 0.4);
             }
         }
         this.updatePosition();
