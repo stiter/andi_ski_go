@@ -39,20 +39,31 @@ body {
     }
 
     #game-container {
-        /* When rotated, width becomes height and height becomes width */
-        width: 100vh; 
-        height: 100vw;
-        max-width: none;
-        max-height: none;
-        aspect-ratio: unset;
+        /* Lock aspect ratio on mobile too */
+        aspect-ratio: 4 / 3;
+        
+        /* 
+           Rotated 90deg clockwise.
+           Width -> Along Phone Height (100vh)
+           Height -> Along Phone Width (100vw)
+        */
+        width: 100vh;      /* Try to fill phone height */
+        height: auto;      /* Let ratio determine height */
+        
+        /* But constrained by phone width */
+        max-height: 100vw; 
+        max-width: 133.33vw; /* If height is constrained to 100vw, width is 1.33 * 100vw */
+
         border-radius: 0;
         margin: 0;
         position: absolute;
         top: 50%;
         left: 50%;
-        /* Rotate 90 degrees to force landscape */
         transform: translate(-50%, -50%) rotate(90deg);
         transform-origin: center center;
+        
+        /* Ensure it doesn't overflow */
+        box-shadow: none; /* Optional: remove shadow on full screen mobile */
     }
 
     /* Adjust controls for rotated view */

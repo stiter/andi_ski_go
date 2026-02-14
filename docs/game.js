@@ -1,38 +1,13 @@
 // Game Configuration
 const isMobile = window.innerWidth <= 600;
-// On mobile, if we force landscape via CSS rotation, 
-// the "Game Width" effectively becomes the phone's HEIGHT, and "Game Height" is phone's WIDTH.
-// But the browser reports innerWidth/innerHeight based on current viewport.
-// If we rotate 90deg, we are swapping them conceptually.
 
-// Let's assume standard landscape dimensions
+// Lock game resolution to 4:3 aspect ratio (1024x768)
+// CSS will handle the scaling and fitting to the screen
 const fixedHeight = 768;
-let gameWidth = 1024;
-let gameHeight = fixedHeight;
-
-if (isMobile) {
-    // We want the game to render as if it's on a landscape screen.
-    // The CSS rotates it to fit the portrait screen.
-    // So internal game resolution should match the aspect ratio of (Height / Width) of the phone.
-    // e.g. Phone is 400w x 800h. 
-    // Rotated Game should be 800w x 400h (conceptually).
-    // We'll keep width fixed at 1024 for consistency.
-    // Then height should be 1024 * (400/800) = 512.
-    
-    // Width of game = Phone Height
-    // Height of game = Phone Width
-    
-    // We use window.innerHeight for "Width" ratio and window.innerWidth for "Height" ratio relative to 1024
-    // Ratio = innerWidth / innerHeight (Small / Large)
-    
-    gameHeight = 1024 * (window.innerWidth / window.innerHeight);
-    // This gives us a wider, shorter view (Landscape aspect ratio)
-}
-
 const CONFIG = {
     GAME_WIDTH: 1024,
-    GAME_HEIGHT: gameHeight,
-    PLAYER_SPEED: 8, // Slightly faster for wider screen
+    GAME_HEIGHT: fixedHeight,
+    PLAYER_SPEED: 8, 
     INITIAL_SCROLL_SPEED: 5,
     MAX_SPEED: 12,
     JUMP_DURATION: 800, // ms
@@ -462,9 +437,8 @@ class Game {
     
     createPlayer() {
         // Position player relative to height. 
-        // In landscape mode, we have less vertical space, so keep him somewhat high (100 is ok)
-        // But let's center him a bit more if height is small.
-        const playerY = isMobile ? CONFIG.GAME_HEIGHT * 0.25 : 100;
+        // Fixed Y position since we are locking aspect ratio now
+        const playerY = 150;
         this.player = new Player(CONFIG.GAME_WIDTH / 2, playerY);
         this.playerGroup.appendChild(this.player.element);
     }
