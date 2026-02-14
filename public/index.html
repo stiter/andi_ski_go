@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andi Ski Go!!!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <div id="ui-layer">
+            <div id="score-board">
+                <span style="font-size: 14px; opacity: 0.8;">SCORE</span>
+                <span id="distance">0</span>
+            </div>
+            <!-- <div id="level-display">Level: <span id="level">1</span></div> -->
+            <div id="instructions">
+                Use <span class="key">←/A</span> <span class="key">→/D</span> to Move, <span class="key">Space/W</span> to Jump
+            </div>
+            
+            <div id="countdown-display" class="hidden">
+                <div class="label">REVERSE ZONE</div>
+                <div class="value">500m</div>
+            </div>
+
+            <!-- Tablet/Mobile Controls -->
+            <div id="mobile-left-controls" class="mobile-ctrl-group">
+                <div id="left-btn" class="ctrl-btn">←</div>
+                <div id="right-btn" class="ctrl-btn">→</div>
+            </div>
+            <div id="mobile-right-controls" class="mobile-ctrl-group">
+                <div id="jump-btn" class="ctrl-btn">JUMP</div>
+            </div>
+
+            <div id="start-screen">
+                <h1>Andi Ski Go!!!</h1>
+                <p>Are you ready for the adventure?</p>
+                <button id="start-btn">Start Game</button>
+            </div>
+            <div id="game-over" class="hidden">
+                <h1>Game Over</h1>
+                <p>Final Distance: <span id="final-score">0</span>m</p>
+                <button id="restart-btn">Restart</button>
+            </div>
+            <div id="victory" class="hidden">
+                <h1>Victory!</h1>
+                <p>You are a pro skier!</p>
+                <button id="restart-btn-win">Play Again</button>
+            </div>
+        </div>
+        
+        <!-- SVG Game Layer -->
+        <svg id="game-svg" viewBox="0 0 1024 768" preserveAspectRatio="xMidYMid meet">
+            <defs>
+                <!-- Enhanced Tree Definition (Blocky Pixel Style) -->
+                <g id="tree">
+                    <!-- Shadow -->
+                    <rect x="-10" y="15" width="20" height="6" fill="rgba(0,0,0,0.1)" />
+                    <!-- Trunk -->
+                    <rect x="-4" y="0" width="8" height="15" fill="#5D4037" />
+                    <!-- Layers (Stacked Triangles/Rectangles) -->
+                    <!-- Bottom -->
+                    <path d="M-20,5 L20,5 L0,-20 Z" fill="#2E7D32" />
+                    <!-- Middle -->
+                    <path d="M-15,-10 L15,-10 L0,-30 Z" fill="#388E3C" />
+                    <!-- Top -->
+                    <path d="M-10,-25 L10,-25 L0,-40 Z" fill="#43A047" />
+                </g>
+                
+                <!-- Flag/Gate Definition (Blocky) -->
+                <g id="flag">
+                     <rect x="-2" y="-30" width="4" height="30" fill="#555" />
+                     <rect x="2" y="-30" width="20" height="15" fill="#0288d1" />
+                     <!-- Pixel Arrow -->
+                     <rect x="8" y="-26" width="2" height="2" fill="white" />
+                     <rect x="10" y="-24" width="2" height="2" fill="white" />
+                     <rect x="12" y="-22" width="2" height="2" fill="white" />
+                     <rect x="10" y="-20" width="2" height="2" fill="white" />
+                     <rect x="8" y="-18" width="2" height="2" fill="white" />
+                </g>
+
+                <!-- Kid Obstacle Definition (Blocky) -->
+                <g id="kid">
+                    <!-- Text JJ (Scaled Up) -->
+                    <text x="0" y="-85" font-family="Arial" font-weight="bold" font-size="28" fill="#1a237e" text-anchor="middle">JJ</text>
+                    
+                    <!-- Shadow -->
+                    <rect x="-15" y="5" width="30" height="5" fill="rgba(0,0,0,0.2)" />
+                    <!-- Legs -->
+                    <rect x="-10" y="-20" width="8" height="20" fill="#fdd835" /> <!-- Yellow 600 -->
+                    <rect x="2" y="-20" width="8" height="20" fill="#fdd835" />
+                    <!-- Body -->
+                    <rect x="-14" y="-45" width="28" height="30" fill="#fdd835" /> <!-- Yellow 600 -->
+                    <!-- Arms -->
+                    <rect x="-18" y="-42" width="6" height="18" fill="#fdd835" />
+                    <rect x="12" y="-42" width="6" height="18" fill="#fdd835" />
+                    <!-- Head -->
+                    <rect x="-10" y="-58" width="20" height="18" fill="#ffccbc" />
+                    <!-- Hair -->
+                    <rect x="-10" y="-60" width="20" height="6" fill="#5d4037" />
+                    <!-- Eyes -->
+                    <rect x="-5" y="-52" width="3" height="3" fill="#333" />
+                    <rect x="2" y="-52" width="3" height="3" fill="#333" />
+                </g>
+
+                <!-- Ditch/Crack Definition (Blocky) -->
+                <g id="ditch">
+                    <rect x="-25" y="-5" width="50" height="10" fill="#3e2723" opacity="0.8" />
+                </g>
+                
+                <!-- Rock Definition (Blocky) -->
+                <g id="rock">
+                    <rect x="-15" y="-5" width="30" height="15" fill="#757575" />
+                    <rect x="-10" y="-10" width="15" height="10" fill="#9e9e9e" />
+                </g>
+                
+                <!-- Ice Crack Definition (Jagged Fissure) -->
+                <g id="ice-crack">
+                    <!-- Main Fissure (Dark Blue/Black) - Widened to cover 1200px -->
+                    <path d="M-600,0 L-550,15 L-500,-5 L-450,20 L-400,-10 L-350,15 L-300,-5 L-250,25 L-200,-15 L-150,10 L-100,-20 L-50,15 L0,-10 L50,25 L100,-5 L150,15 L200,-10 L250,25 L300,-5 L350,15 L400,-10 L450,20 L500,-5 L550,15 L600,0 L600,10 L550,25 L500,5 L450,30 L400,0 L350,25 L300,5 L250,35 L200,0 L150,25 L100,-10 L50,20 L0,-5 L-50,35 L-100,5 L-150,25 L-200,0 L-250,30 L-300,5 L-350,25 L-400,10 L-450,35 L-500,5 L-550,25 L-600,10 Z" fill="#0d47a1" stroke="#82b1ff" stroke-width="2" />
+                    <!-- Inner Detail (Lighter Blue) -->
+                    <path d="M-580,5 L-530,-2 L-480,15 L-430,-5 L-380,10 L-330,-2 L-280,20 L-230,-10 L-180,5 L-130,-15 L-80,10 L-30,-5 L20,20 L70,-2 L120,10 L170,-5 L220,15 L270,-2 L320,5 L370,-5 L420,15 L470,-2 L520,10 L570,-5 L580,5" fill="none" stroke="#bbdefb" stroke-width="2" opacity="0.7" />
+                </g>
+                
+                <!-- Poop Definition (Coiled Brown Pile) -->
+                <g id="poop">
+                    <!-- Bottom Coil -->
+                    <ellipse cx="0" cy="5" rx="15" ry="8" fill="#5d4037" />
+                    <!-- Middle Coil -->
+                    <ellipse cx="0" cy="-2" rx="12" ry="6" fill="#6d4c41" />
+                    <!-- Top Coil -->
+                    <ellipse cx="0" cy="-8" rx="8" ry="5" fill="#795548" />
+                    <!-- Tip -->
+                    <path d="M-4,-10 Q0,-18 4,-10" fill="#795548" />
+                    <!-- Shine/Wetness -->
+                    <ellipse cx="-5" cy="-2" rx="2" ry="1" fill="rgba(255,255,255,0.3)" />
+                </g>
+
+                <!-- Squatting Kid Definition (Side View / Mario Jump Style) -->
+                <g id="squat-kid">
+                    <!-- Text JJ -->
+                    <text x="0" y="-60" font-family="Arial" font-weight="bold" font-size="20" fill="#1a237e" text-anchor="middle">JJ</text>
+                    
+                    <!-- Side View Body (Yellow) -->
+                    <!-- Leg (Back) -->
+                    <path d="M-10,0 L-20,-10 L-10,-20" fill="none" stroke="#fdd835" stroke-width="8" stroke-linecap="round" />
+                    <circle cx="-10" cy="0" r="4" fill="#5d4037" /> <!-- Shoe -->
+                    
+                    <!-- Leg (Front/Jumping) -->
+                    <path d="M5,-5 L15,-15 L5,-25" fill="none" stroke="#fdd835" stroke-width="8" stroke-linecap="round" />
+                    <circle cx="5" cy="-5" r="4" fill="#5d4037" /> <!-- Shoe -->
+                    
+                    <!-- Torso -->
+                    <rect x="-10" y="-40" width="20" height="25" rx="5" fill="#fdd835" />
+                    
+                    <!-- Arm (Raised) -->
+                    <path d="M5,-35 L15,-45 L20,-35" fill="none" stroke="#fdd835" stroke-width="6" stroke-linecap="round" />
+                    <circle cx="20" cy="-35" r="3" fill="#ffccbc" /> <!-- Hand -->
+                    
+                    <!-- Head (Side profile) -->
+                    <rect x="-5" y="-55" width="18" height="18" rx="4" fill="#ffccbc" />
+                    <path d="M-5,-55 L13,-55 L13,-45 L-5,-45 Z" fill="#5d4037" /> <!-- Hat/Hair -->
+                    <rect x="13" y="-50" width="4" height="2" fill="#5d4037" /> <!-- Bill of hat -->
+                    <circle cx="8" cy="-50" r="1.5" fill="#333" /> <!-- Eye -->
+                    <rect x="8" y="-46" width="4" height="1" fill="#333" /> <!-- Mustache/Mouth -->
+                </g>
+
+                <!-- Sledding Kid Definition (New Type 1) -->
+                <g id="sled-kid">
+                    <!-- Text JJ -->
+                    <text x="0" y="-60" font-family="Arial" font-weight="bold" font-size="20" fill="#1a237e" text-anchor="middle">JJ</text>
+                    
+                    <!-- Sled (Red runners, wood top) -->
+                    <path d="M-25,10 L25,10 C30,10 30,5 25,5 L-25,5" fill="#d32f2f" /> <!-- Runner -->
+                    <rect x="-20" y="0" width="40" height="5" fill="#8d6e63" /> <!-- Seat -->
+                    
+                    <!-- Legs (Sitting forward) -->
+                    <rect x="5" y="-10" width="20" height="10" fill="#fdd835" />
+                    <rect x="25" y="-5" width="8" height="10" fill="#5d4037" /> <!-- Boots -->
+
+                    <!-- Body (Sitting) -->
+                    <rect x="-15" y="-30" width="20" height="30" fill="#fdd835" />
+                    
+                    <!-- Arms (Holding sled?) -->
+                    <rect x="-5" y="-25" width="15" height="8" fill="#fdd835" transform="rotate(20)" />
+
+                    <!-- Head -->
+                    <rect x="-15" y="-50" width="20" height="20" fill="#ffccbc" />
+                    <rect x="-15" y="-52" width="20" height="6" fill="#5d4037" /> <!-- Hair -->
+                    <rect x="-8" y="-42" width="3" height="3" fill="#333" /> <!-- Eye -->
+                    <rect x="-14" y="-46" width="20" height="8" fill="#d32f2f" opacity="0.8" /> <!-- Goggles -->
+                </g>
+
+                <!-- Carousel Definition -->
+                <g id="carousel">
+                    <!-- Base Platform -->
+                    <ellipse cx="0" cy="10" rx="120" ry="30" fill="#e0e0e0" stroke="#9e9e9e" stroke-width="2" />
+                    <ellipse cx="0" cy="5" rx="120" ry="30" fill="#f5f5f5" />
+                    
+                    <!-- Center Pole -->
+                    <rect x="-10" y="-80" width="20" height="90" fill="#bdbdbd" />
+                    <ellipse cx="0" cy="-80" rx="10" ry="5" fill="#e0e0e0" />
+                    
+                    <!-- Handrails (Curved) -->
+                    <path d="M-100,5 Q-100,-40 0,-40 Q100,-40 100,5" fill="none" stroke="#ef5350" stroke-width="5" />
+                    <line x1="-100" y1="5" x2="-100" y2="20" stroke="#ef5350" stroke-width="5" />
+                    <line x1="100" y1="5" x2="100" y2="20" stroke="#ef5350" stroke-width="5" />
+                    <line x1="0" y1="-40" x2="0" y2="5" stroke="#ef5350" stroke-width="5" />
+                    
+                    <!-- Sitting JJs (Simplified) -->
+                    <!-- Left JJ -->
+                    <g transform="translate(-60, -10) scale(0.8)">
+                        <rect x="-10" y="-30" width="20" height="25" fill="#fdd835" />
+                        <circle cx="0" cy="-40" r="10" fill="#ffccbc" />
+                        <rect x="-10" y="-42" width="20" height="4" fill="#5d4037" />
+                        <text x="0" y="-55" font-family="Arial" font-weight="bold" font-size="20" fill="#1a237e" text-anchor="middle">JJ</text>
+                    </g>
+                    <!-- Right JJ -->
+                    <g transform="translate(60, -10) scale(0.8)">
+                        <rect x="-10" y="-30" width="20" height="25" fill="#fdd835" />
+                        <circle cx="0" cy="-40" r="10" fill="#ffccbc" />
+                        <rect x="-10" y="-42" width="20" height="4" fill="#5d4037" />
+                        <text x="0" y="-55" font-family="Arial" font-weight="bold" font-size="20" fill="#1a237e" text-anchor="middle">JJ</text>
+                    </g>
+                    <!-- Front JJ -->
+                    <g transform="translate(0, 10) scale(0.9)">
+                        <rect x="-10" y="-30" width="20" height="25" fill="#fdd835" />
+                        <circle cx="0" cy="-40" r="10" fill="#ffccbc" />
+                        <rect x="-10" y="-42" width="20" height="4" fill="#5d4037" />
+                        <text x="0" y="-55" font-family="Arial" font-weight="bold" font-size="20" fill="#1a237e" text-anchor="middle">JJ</text>
+                    </g>
+                </g>
+                
+                <!-- Mountain Background Shapes -->
+                <g id="mountain-bg">
+                    <polygon points="0,0 200,-300 400,0" fill="#90caf9" />
+                    <polygon points="200,-300 250,-200 150,-200" fill="white" /> <!-- Snow cap -->
+                </g>
+                
+                <!-- Finish Line Definition -->
+                <g id="finish-line">
+                    <rect x="-400" y="0" width="800" height="20" fill="#cc0000" />
+                    <text x="0" y="15" text-anchor="middle" fill="white" font-weight="bold" font-family="Arial">FINISH</text>
+                </g>
+            </defs>
+            
+            <!-- Dynamic elements will be added here by JS -->
+            <g id="background-layer"></g>
+            
+            <!-- Camera Group for World Scrolling -->
+            <g id="world-camera">
+                <g id="slope-group"></g>
+                <g id="trail-group"></g>
+                <g id="player-group"></g>
+            </g>
+        </svg>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

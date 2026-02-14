@@ -1,0 +1,242 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f8ff; /* AliceBlue background */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+}
+
+#game-container {
+    position: relative;
+    width: 1024px;
+    height: 768px;
+    max-width: 98vw;
+    max-height: 98vh;
+    aspect-ratio: 4 / 3;
+    background: linear-gradient(to bottom, #e0f7fa 0%, #ffffff 100%);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: auto; /* Ensure centering */
+    transition: filter 1s ease;
+}
+
+/* Mobile Adaptation (iPhone) */
+@media screen and (max-width: 600px) {
+    #game-container {
+        width: 100vw;
+        height: 100vh;
+        max-width: 100%;
+        max-height: 100%;
+        aspect-ratio: unset;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    body {
+        background-color: #fff; /* Blend with game */
+    }
+}
+
+#game-container.dark-mode {
+    filter: brightness(0.4) contrast(1.2);
+}
+
+#game-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; 
+    z-index: 10;
+}
+
+#score-board {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    left: auto;
+    background: #0288d1; /* Blue background */
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px; /* Fully rounded */
+    font-size: 24px;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
+
+#score-board span {
+    font-size: 32px;
+}
+
+#level-display {
+    display: none; /* Hide level for now to match cleaner UI */
+}
+
+/* Add a separate style for the "SCORE" label text if we want to match exactly,
+   but for now we just style the whole block.
+   Actually, the reference has "SCORE" small and number big.
+*/
+
+#instructions {
+    position: absolute;
+    top: 20px; /* Moved to top */
+    left: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+}
+
+#countdown-display {
+    position: absolute;
+    top: 80px;
+    width: 100%;
+    text-align: center;
+    color: #ff3d00;
+    font-weight: bold;
+    text-shadow: 2px 2px 0 #fff;
+    pointer-events: none;
+    z-index: 100;
+}
+#countdown-display.warning {
+    color: #ff9800; /* Orange for warning */
+}
+.label { font-size: 24px; letter-spacing: 2px; }
+.value { font-size: 48px; font-family: 'Courier New', monospace; }
+
+/* Tablet/Mobile Controls */
+.mobile-ctrl-group {
+    position: absolute;
+    bottom: 30px;
+    display: flex;
+    gap: 15px;
+    pointer-events: auto; /* Enable interaction */
+    z-index: 1000; /* Ensure on top */
+}
+
+#mobile-left-controls {
+    left: 30px;
+}
+
+#mobile-right-controls {
+    right: 30px;
+}
+
+.ctrl-btn {
+    width: 80px;
+    height: 80px;
+    background: rgba(2, 136, 209, 0.7);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    cursor: pointer;
+    border: 2px solid white;
+    transition: transform 0.1s, background-color 0.1s;
+}
+
+.ctrl-btn:active, .ctrl-btn.active {
+    background: rgba(2, 136, 209, 0.9);
+    transform: scale(0.9);
+}
+
+#jump-btn {
+    width: 100px;
+    height: 100px;
+    background: rgba(230, 126, 34, 0.8);
+    font-size: 20px;
+}
+
+#jump-btn:active, #jump-btn.active {
+    background: rgba(230, 126, 34, 1);
+    transform: scale(0.9);
+}
+
+.key {
+    background: #fff;
+    color: #333;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin: 0 2px;
+}
+
+#game-over, #victory, #start-screen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    pointer-events: auto;
+}
+
+#start-screen h1 {
+    font-size: 36px;
+    color: #e67e22;
+    text-shadow: 2px 2px 0px #333;
+    margin-bottom: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+h1 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+button {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: #2980b9;
+}
+
+#victory h1 {
+    color: #27ae60;
+}
+
+#victory button {
+    background: #27ae60;
+}
+
+#victory button:hover {
+    background: #219150;
+}
