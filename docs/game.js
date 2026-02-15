@@ -257,6 +257,7 @@ class Game {
         this.victoryScreen = document.getElementById('victory');
         this.countdownDisplay = document.getElementById('countdown-display');
         this.countdownValue = this.countdownDisplay.querySelector('.value');
+        this.reverseIcon = document.getElementById('reverse-warning-icon');
         
         this.audio = new AudioManager();
         this.bgManager = new BackgroundManager(this.bgGroup);
@@ -326,16 +327,101 @@ class Game {
         const leftBtn = document.getElementById('left-btn');
         const rightBtn = document.getElementById('right-btn');
         const jumpBtn = document.getElementById('jump-btn');
+        // Add a full-screen touch zone for easier control
+        const gameContainer = document.getElementById('game-container');
 
         const handleStart = (key, btn) => {
             this.keys[key] = true;
-            btn.classList.add('active');
+            if(btn) btn.classList.add('active');
         };
         const handleEnd = (key, btn) => {
             this.keys[key] = false;
-            btn.classList.remove('active');
+            if(btn) btn.classList.remove('active');
         };
 
+        // Screen-wide touch handling
+        // Divide screen into left/right halves for steering if not touching a specific button
+        gameContainer.addEventListener('touchstart', (e) => {
+            // Don't interfere if touching specific buttons
+            if (e.target.closest('.ctrl-btn')) return;
+            
+            e.preventDefault();
+            // In rotated view (landscape on phone), width is height and height is width.
+            // But clientX/Y are screen coordinates.
+            // If phone is portrait held sideways:
+            // Top half of screen (physically) -> Left
+            // Bottom half of screen (physically) -> Right
+            
+            // Wait, let's just use the visual center of the game container
+            const rect = gameContainer.getBoundingClientRect();
+            // Since we rotate the container, its bounding rect might be confusing.
+            // Let's rely on window coordinates.
+            // If visual landscape: Left half of screen steers left, Right half steers right.
+            
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const t = e.changedTouches[i];
+                const x = t.clientX;
+                const y = t.clientY;
+                
+                // Check if it's in left or right half of the viewport
+                // Assuming user holds phone in landscape:
+                // Width > Height usually.
+                // If Width < Height (Portrait but forced rotation), visual Left is Top?
+                
+                // Let's assume visual left/right relative to the game view.
+                // If rotated 90deg:
+                // Visual Left = Physical Top (low Y)
+                // Visual Right = Physical Bottom (high Y)
+                
+                if (isMobile) {
+                    // Portrait mode physically, but game rotated
+                    // Y < window.innerHeight / 2 => Left
+                    // Y > window.innerHeight / 2 => Right
+                    if (y < window.innerHeight / 2) {
+                        handleStart('KeyA', leftBtn);
+                        t.identifier_key = 'KeyA'; // Tag touch to key
+                    } else {
+                        handleStart('KeyD', rightBtn);
+                        t.identifier_key = 'KeyD';
+                    }
+                } else {
+                    // Standard landscape/desktop
+                    if (x < window.innerWidth / 2) {
+                        handleStart('KeyA', leftBtn);
+                        t.identifier_key = 'KeyA';
+                    } else {
+                        handleStart('KeyD', rightBtn);
+                        t.identifier_key = 'KeyD';
+                    }
+                }
+            }
+        }, {passive: false});
+
+        gameContainer.addEventListener('touchend', (e) => {
+             if (e.target.closest('.ctrl-btn')) return;
+             e.preventDefault();
+             // We need to know which key to release.
+             // Since we don't track touch IDs perfectly here without a map,
+             // let's just release keys based on current touches?
+             // Or simpler: Release ALL keys if no touches? 
+             // Better: Use the logic again or a simple "release both if 0 touches".
+             
+             // Simple approach: If no touches remaining on screen, release both.
+             if (e.touches.length === 0) {
+                 handleEnd('KeyA', leftBtn);
+                 handleEnd('KeyD', rightBtn);
+             }
+        });
+        
+        // Also handle touchcancel
+        gameContainer.addEventListener('touchcancel', (e) => {
+             if (e.touches.length === 0) {
+                 handleEnd('KeyA', leftBtn);
+                 handleEnd('KeyD', rightBtn);
+             }
+        });
+
+        // Keep existing button listeners as visual feedback/fallback
         // Left Button
         leftBtn.addEventListener('mousedown', () => handleStart('KeyA', leftBtn));
         leftBtn.addEventListener('mouseup', () => handleEnd('KeyA', leftBtn));
@@ -402,6 +488,10 @@ class Game {
         this.hasSpawnedCarousel2 = false;
         document.getElementById('game-container').classList.remove('dark-mode');
         this.countdownDisplay.classList.add('hidden');
+        if (this.reverseIcon) {
+            this.reverseIcon.classList.add('hidden');
+            this.reverseIcon.classList.remove('blink');
+        }
 
         if (this.poopingJJ && this.poopingJJ.element) {
             this.poopingJJ.element.remove();
@@ -529,6 +619,10 @@ class Game {
     }
 
     spawnWallTrees() {
+        // No trees during reverse zone (approx 750m - 1250m)
+        // Give a little buffer before and after to clear the path for the Carousel
+        if (this.distance > 700 && this.distance < 1300) return;
+
         const y = CONFIG.GAME_HEIGHT + 50;
         const leftPathCenter = this.pathCenter - (this.splitDistance / 2);
         const rightPathCenter = this.pathCenter + (this.splitDistance / 2);
@@ -665,30 +759,18 @@ class Game {
         
         if (this.carouselActive) moveDir *= -1; // Reverse controls
 
-        // Update countdown/warning display
-        if (this.carouselActive) {
-            // Active Phase
-            this.countdownDisplay.classList.remove('hidden');
-            this.countdownDisplay.classList.remove('warning');
-            this.countdownDisplay.querySelector('.label').textContent = "REVERSE ZONE";
-            const remaining = Math.max(0, 1250 - this.distance);
-            this.countdownValue.textContent = Math.floor(remaining) + 'm LEFT';
-        } else if (!this.hasSpawnedCarousel1 && this.distance > 500) {
-            // Warning Phase (Approaching Spawn)
-            this.countdownDisplay.classList.remove('hidden');
-            this.countdownDisplay.classList.add('warning');
-            this.countdownDisplay.querySelector('.label').textContent = "WARNING";
-            const remaining = Math.max(0, 750 - this.distance);
-            this.countdownValue.textContent = "REVERSE IN " + Math.floor(remaining) + "m";
-        } else if (this.hasSpawnedCarousel1 && !this.carouselActive && this.distance < 1250) {
-            // Imminent Phase (Spawned but not hit yet)
-            this.countdownDisplay.classList.remove('hidden');
-            this.countdownDisplay.classList.add('warning');
-            this.countdownDisplay.querySelector('.label').textContent = "WARNING";
-            this.countdownValue.textContent = "HERE IT COMES!";
+        // Update warning icon (replaces old text countdown)
+        // Show icon from 500m (warning) until end of zone (1250m)
+        if (this.distance > 500 && this.distance < 1250) {
+            this.reverseIcon.classList.remove('hidden');
+            this.reverseIcon.classList.add('blink');
         } else {
-             this.countdownDisplay.classList.add('hidden');
+             this.reverseIcon.classList.add('hidden');
+             this.reverseIcon.classList.remove('blink');
         }
+        
+        // Hide old countdown text
+        this.countdownDisplay.classList.add('hidden');
         
         if (moveDir !== 0) {
             this.player.move(moveDir * CONFIG.PLAYER_SPEED);
@@ -737,11 +819,11 @@ class Game {
         if (obs.phase === 1) {
             this.carouselActive = true;
             document.getElementById('game-container').classList.add('dark-mode');
-            this.countdownDisplay.classList.remove('hidden');
+            // Icon handling is done in update loop
         } else {
             this.carouselActive = false;
             document.getElementById('game-container').classList.remove('dark-mode');
-            this.countdownDisplay.classList.add('hidden');
+            // Icon handling is done in update loop
         }
     }
 
@@ -1066,8 +1148,8 @@ class Player {
         this.vx = 0;
         this.isJumping = false;
         this.jumpStartTime = 0;
-        // Increase scale for mobile to make him more visible
-        this.baseScale = isMobile ? 1.2 : 0.8; 
+        // Use consistent scale for all devices to maintain ratio
+        this.baseScale = 0.8; 
         this.scale = this.baseScale;
         this.angle = 0;
         this.bobOffset = 0;

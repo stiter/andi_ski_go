@@ -103,7 +103,7 @@ body {
 }
 
 #game-container.dark-mode {
-    filter: brightness(0.4) contrast(1.2);
+    filter: brightness(0.7) contrast(1.1);
 }
 
 #game-svg {
@@ -142,6 +142,20 @@ body {
 
 #score-board span {
     font-size: 32px;
+}
+
+#reverse-warning-icon {
+    margin-top: 5px;
+}
+
+.blink {
+    animation: blinker 1s linear infinite;
+}
+
+@keyframes blinker {
+    50% {
+        opacity: 0;
+    }
 }
 
 #level-display {
