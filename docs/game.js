@@ -309,10 +309,9 @@ class Game {
         // Hide mobile controls initially
         document.getElementById('mobile-controls').style.display = 'none';
 
-        this.startBtn.addEventListener('touchstart', (e) => {
+        this.startBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            // e.preventDefault(); // Don't prevent default, let click fire? Or fire manually.
-            // Better to just fire logic here to be responsive
             this.audio.init();
             this.startGame();
         });
@@ -328,14 +327,15 @@ class Game {
         const restartBtnWin = document.getElementById('restart-btn-win');
         
         const handleRestart = (e) => {
+            if(e.type === 'touchend') e.preventDefault();
             e.stopPropagation();
             this.restart();
         };
 
-        restartBtn.addEventListener('touchstart', handleRestart);
+        restartBtn.addEventListener('touchend', handleRestart);
         restartBtn.addEventListener('click', handleRestart);
         
-        restartBtnWin.addEventListener('touchstart', handleRestart);
+        restartBtnWin.addEventListener('touchend', handleRestart);
         restartBtnWin.addEventListener('click', handleRestart);
     }
 
@@ -433,15 +433,12 @@ class Game {
             // But we want to allow steering even if we start on empty space and move.
             // We just ignore start on buttons.
             
-            if (e.type === 'touchstart') {
+            if (e.type === 'touchstart' || e.type === 'touchend') {
                  // Check if it's the start/restart buttons
                  if (e.target.closest('button')) {
-                     // Let the click event fire naturally for buttons
+                     // Let the event fire naturally for buttons
                      return; 
                  }
-                 
-                 // If it's a control button, we let it handle itself via its own listeners?
-                 // But wait, we added preventDefault() below which might block clicks if not careful.
             }
             
             if (e.target.closest('.ctrl-btn')) return; // Let button listeners handle buttons
@@ -449,7 +446,7 @@ class Game {
             // Only prevent default for GAMEPLAY touches (steering)
             // If we are not playing, don't prevent default so UI clicks work?
             if (this.state === 'PLAYING') {
-                e.preventDefault();
+                if (e.cancelable) e.preventDefault();
                 updateSteering(e.touches);
             }
         };
