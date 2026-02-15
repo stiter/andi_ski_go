@@ -8,8 +8,8 @@ const CONFIG = {
     GAME_WIDTH: 1024,
     GAME_HEIGHT: fixedHeight,
     PLAYER_SPEED: 8, 
-    INITIAL_SCROLL_SPEED: 5,
-    MAX_SPEED: 12,
+    INITIAL_SCROLL_SPEED: 3.5, // Reduced to 2/3 (was 5)
+    MAX_SPEED: 8, // Reduced to 2/3 (was 12)
     JUMP_DURATION: 800, // ms
     OBSTACLE_SPAWN_RATE: 60, // frames
     WIN_DISTANCE: 2000, // meters
@@ -696,7 +696,7 @@ class Game {
         this.distance += this.scrollSpeed * CONFIG.METER_SCALE;
         
         // Speed control: Slow down during reverse zone
-        let targetMaxSpeed = this.carouselActive ? 6 : CONFIG.MAX_SPEED;
+        let targetMaxSpeed = this.carouselActive ? 4 : CONFIG.MAX_SPEED; // Reduced to 2/3 (was 6)
         
         if (this.scrollSpeed < targetMaxSpeed) {
             this.scrollSpeed += 0.001;
