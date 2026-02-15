@@ -536,12 +536,15 @@ class Game {
     spawnJJBarrier() {
         if (this.distance < 100) return;
         const isLeft = Math.random() > 0.5;
-        // Ensure JJ spawns close to the tree wall but still within the 1024 width
-        const offset = (this.pathWidth / 2) + 60; 
+        // Ensure JJ spawns close to the tree wall but VISIBLE
+        // Previous offset was +60, which put him deep in trees. 
+        // Reduced to +15 to put him right at the edge of the tree line
+        const offset = (this.pathWidth / 2) + 15; 
         let x = isLeft ? (this.pathCenter - offset) : (this.pathCenter + offset);
         
         // Constrain x to be well within visible screen (1024 width)
-        x = Math.max(80, Math.min(CONFIG.GAME_WIDTH - 80, x));
+        // Increased margins to 100 to ensure he doesn't get cut off
+        x = Math.max(100, Math.min(CONFIG.GAME_WIDTH - 100, x));
         
         // Spawn slightly below screen to scroll up
         const obstacle = new Obstacle(this.pathCenter, CONFIG.GAME_HEIGHT + 150, 'jj-barrier');
