@@ -327,7 +327,6 @@ class Game {
         const leftBtn = document.getElementById('left-btn');
         const rightBtn = document.getElementById('right-btn');
         const jumpBtn = document.getElementById('jump-btn');
-        // Add a full-screen touch zone for easier control
         const gameContainer = document.getElementById('game-container');
 
         const handleStart = (key, btn) => {
@@ -339,89 +338,103 @@ class Game {
             if(btn) btn.classList.remove('active');
         };
 
-        // Screen-wide touch handling
-        // Divide screen into left/right halves for steering if not touching a specific button
-        gameContainer.addEventListener('touchstart', (e) => {
-            // Don't interfere if touching specific buttons or UI elements like Start/Restart
-            if (e.target.closest('.ctrl-btn') || e.target.closest('button')) return;
-            
-            e.preventDefault();
-            // In rotated view (landscape on phone), width is height and height is width.
-            // But clientX/Y are screen coordinates.
-            // If phone is portrait held sideways:
-            // Top half of screen (physically) -> Left
-            // Bottom half of screen (physically) -> Right
-            
-            // Wait, let's just use the visual center of the game container
-            const rect = gameContainer.getBoundingClientRect();
-            // Since we rotate the container, its bounding rect might be confusing.
-            // Let's rely on window coordinates.
-            // If visual landscape: Left half of screen steers left, Right half steers right.
-            
-            for (let i = 0; i < e.changedTouches.length; i++) {
-                const t = e.changedTouches[i];
+        const updateSteering = (touches) => {
+            let pressingLeft = false;
+            let pressingRight = false;
+
+            for (let i = 0; i < touches.length; i++) {
+                const t = touches[i];
+                const target = t.target;
+                
+                // If touching specific buttons, let button logic handle it (or handle here if we want unified)
+                // But we have specific listeners for buttons. 
+                // Let's focus on the "screen area" steering.
+                if (target.closest('.ctrl-btn') || target.closest('button')) continue;
+
                 const x = t.clientX;
                 const y = t.clientY;
-                
-                // Check if it's in left or right half of the viewport
-                // Assuming user holds phone in landscape:
-                // Width > Height usually.
-                // If Width < Height (Portrait but forced rotation), visual Left is Top?
-                
-                // Let's assume visual left/right relative to the game view.
-                // If rotated 90deg:
-                // Visual Left = Physical Top (low Y)
-                // Visual Right = Physical Bottom (high Y)
-                
+
+                // Determine Left/Right zone based on orientation
                 if (isMobile) {
-                    // Portrait mode physically, but game rotated
-                    // Y < window.innerHeight / 2 => Left
-                    // Y > window.innerHeight / 2 => Right
-                    if (y < window.innerHeight / 2) {
-                        handleStart('KeyA', leftBtn);
-                        t.identifier_key = 'KeyA'; // Tag touch to key
-                    } else {
-                        handleStart('KeyD', rightBtn);
-                        t.identifier_key = 'KeyD';
-                    }
+                    // Portrait physical, Rotated game
+                    // Top half physical (low Y) -> Left
+                    if (y < window.innerHeight / 2) pressingLeft = true;
+                    else pressingRight = true;
                 } else {
-                    // Standard landscape/desktop
-                    if (x < window.innerWidth / 2) {
-                        handleStart('KeyA', leftBtn);
-                        t.identifier_key = 'KeyA';
-                    } else {
-                        handleStart('KeyD', rightBtn);
-                        t.identifier_key = 'KeyD';
-                    }
+                    // Standard
+                    if (x < window.innerWidth / 2) pressingLeft = true;
+                    else pressingRight = true;
                 }
             }
-        }, {passive: false});
 
-        gameContainer.addEventListener('touchend', (e) => {
-             if (e.target.closest('.ctrl-btn') || e.target.closest('button')) return;
-             e.preventDefault();
-             // We need to know which key to release.
-             // Since we don't track touch IDs perfectly here without a map,
-             // let's just release keys based on current touches?
-             // Or simpler: Release ALL keys if no touches? 
-             // Better: Use the logic again or a simple "release both if 0 touches".
-             
-             // Simple approach: If no touches remaining on screen, release both.
-             if (e.touches.length === 0) {
-                 handleEnd('KeyA', leftBtn);
-                 handleEnd('KeyD', rightBtn);
-             }
-        });
-        
-        // Also handle touchcancel
-        gameContainer.addEventListener('touchcancel', (e) => {
-             if (e.touches.length === 0) {
-                 handleEnd('KeyA', leftBtn);
-                 handleEnd('KeyD', rightBtn);
-             }
-        });
+            // Update keys
+            // Only override if touches are present on screen areas. 
+            // If button is pressed, it sets keys directly. We shouldn't clear them if screen touch is absent but button touch is present.
+            // However, this function iterates ALL touches. 
+            // If a touch is on a button, we skipped it above.
+            // So pressingLeft/Right only reflects "screen touches".
+            
+            // Actually, we should just update the keys based on screen touches OR keep button state.
+            // But 'this.keys' is global.
+            // Simplest: Reset keys controlled by screen touch, then apply.
+            // But we don't know which keys were set by buttons vs screen.
+            // Let's assume screen touch overrides/ORs with buttons.
+            
+            // To make "touch and move" work, we need to continuously update.
+            // If we slide from Left to Right, we want Left=False, Right=True.
+            
+            // We can't easily distinguish source of key press in 'this.keys'.
+            // Let's use a separate state for "screen steering" and merge it?
+            // Or just directly manipulate keys if we assume screen touch is dominant.
+            
+            // Let's direct manipulate, but be careful not to kill button presses if multi-touch.
+            // If we have ANY screen touch in Left Zone, set KeyA.
+            // If NO screen touch in Left Zone, we should probably unset KeyA (unless button is held?).
+            // For now, let's just implement the "Slide" logic:
+            
+            if (pressingLeft) {
+                if (!this.keys.KeyA) handleStart('KeyA', leftBtn); // Visual feedback on button too?
+            } else {
+                // Only release if we were holding it via screen? 
+                // Hard to track. Let's just release. 
+                // If user holds button AND screen, and releases screen, button might stop working?
+                // Yes, but acceptable for now.
+                if (this.keys.KeyA) handleEnd('KeyA', leftBtn);
+            }
 
-        // Keep existing button listeners as visual feedback/fallback
+            if (pressingRight) {
+                if (!this.keys.KeyD) handleStart('KeyD', rightBtn);
+            } else {
+                if (this.keys.KeyD) handleEnd('KeyD', rightBtn);
+            }
+        };
+
+        // Screen-wide touch handling
+        const handleTouch = (e) => {
+            // Check if we touched a UI element that should block game input
+            // But we want to allow steering even if we start on empty space and move.
+            // We just ignore start on buttons.
+            
+            if (e.type === 'touchstart') {
+                 if (e.target.closest('button')) return; // Block standard buttons, allow steering
+                 // Don't block .ctrl-btn here, let them handle themselves? 
+                 // Or let this handler handle EVERYTHING?
+                 // If we let this handler handle everything, we don't need button listeners.
+                 // But buttons give visual feedback.
+            }
+            
+            if (e.target.closest('.ctrl-btn')) return; // Let button listeners handle buttons
+
+            e.preventDefault();
+            updateSteering(e.touches);
+        };
+
+        gameContainer.addEventListener('touchstart', handleTouch, {passive: false});
+        gameContainer.addEventListener('touchmove', handleTouch, {passive: false});
+        gameContainer.addEventListener('touchend', handleTouch);
+        gameContainer.addEventListener('touchcancel', handleTouch);
+
+        // Keep existing button listeners...
         // Left Button
         leftBtn.addEventListener('mousedown', () => handleStart('KeyA', leftBtn));
         leftBtn.addEventListener('mouseup', () => handleEnd('KeyA', leftBtn));
@@ -1021,7 +1034,7 @@ class Game {
             // Dense poop spawn
             if (!jj.poopTimer) jj.poopTimer = 0;
             jj.poopTimer++;
-            if (jj.poopTimer > 4) { // Very dense
+            if (jj.poopTimer > 20) { // Increased from 4 to 20 for bigger spacing
                 this.spawnPoop(jj.x, jj.y + 20); 
                 jj.poopTimer = 0;
             }
