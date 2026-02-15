@@ -13,10 +13,10 @@ body {
 #game-container {
     position: relative;
     width: 1024px;
-    height: 768px;
+    height: 640px; /* 16:10 ratio */
     max-width: 98vw;
     max-height: 98vh;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 10;
     background: linear-gradient(to bottom, #e0f7fa 0%, #ffffff 100%);
     box-shadow: 0 10px 20px rgba(0,0,0,0.2);
     border-radius: 8px;
@@ -40,7 +40,7 @@ body {
 
     #game-container {
         /* Lock aspect ratio on mobile too */
-        aspect-ratio: 4 / 3;
+        aspect-ratio: 16 / 10;
         
         /* 
            Rotated 90deg clockwise.
@@ -52,7 +52,7 @@ body {
         
         /* But constrained by phone width */
         max-height: 100vw; 
-        max-width: 133.33vw; /* If height is constrained to 100vw, width is 1.33 * 100vw */
+        max-width: 160vw; /* 1.6 * 100vw */
 
         border-radius: 0;
         margin: 0;

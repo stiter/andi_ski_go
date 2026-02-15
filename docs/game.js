@@ -1,9 +1,9 @@
 // Game Configuration
 const isMobile = window.innerWidth <= 600;
 
-// Lock game resolution to 4:3 aspect ratio (1024x768)
-// CSS will handle the scaling and fitting to the screen
-const fixedHeight = 768;
+// Lock game resolution to 16:10 aspect ratio (1024x640)
+// 1024 / 1.6 = 640
+const fixedHeight = 640;
 const CONFIG = {
     GAME_WIDTH: 1024,
     GAME_HEIGHT: fixedHeight,
