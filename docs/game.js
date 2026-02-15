@@ -760,8 +760,8 @@ class Game {
         if (this.carouselActive) moveDir *= -1; // Reverse controls
 
         // Update warning icon (replaces old text countdown)
-        // Show icon from 500m (warning) until end of zone (1250m)
-        if (this.distance > 500 && this.distance < 1250) {
+        // ONLY show icon when reverse zone is ACTUALLY ACTIVE
+        if (this.carouselActive) {
             this.reverseIcon.classList.remove('hidden');
             this.reverseIcon.classList.add('blink');
         } else {
