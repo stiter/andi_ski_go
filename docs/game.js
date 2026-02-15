@@ -1324,7 +1324,7 @@ class Obstacle {
             this.crackElement.setAttribute("transform", "translate(0, -30) scale(0, 1)");
             this.element.appendChild(this.crackElement);
             const kidGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            kidGroup.setAttribute("transform", "translate(0, -30) scale(3.5)"); // Reduced size
+            kidGroup.setAttribute("transform", "translate(0, -30) scale(2.4)"); // Reduced to 2/3 size
             const kidUse = document.createElementNS("http://www.w3.org/2000/svg", "use");
             kidUse.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#kid");
             kidGroup.appendChild(kidUse);
@@ -1350,7 +1350,7 @@ class Obstacle {
 
     updateKidPosition() {
         if (this.type === 'jj-barrier' && this.kidElement) {
-            this.kidElement.setAttribute("transform", `translate(${this.kidOffsetX}, -30) scale(3.5)`);
+            this.kidElement.setAttribute("transform", `translate(${this.kidOffsetX}, -30) scale(2.4)`);
         }
     }
     
@@ -1387,10 +1387,10 @@ class Obstacle {
                 if (this.animTimer <= duration) {
                     const progress = this.animTimer / duration;
                     const jumpHeight = Math.sin(progress * Math.PI) * 120; // Slightly lower jump
-                    this.kidElement.setAttribute("transform", `translate(${this.kidOffsetX}, ${-30 - jumpHeight}) scale(3.5)`);
+                    this.kidElement.setAttribute("transform", `translate(${this.kidOffsetX}, ${-30 - jumpHeight}) scale(2.4)`);
                 } else {
                     this.barrierState = 'crack'; this.animTimer = 0;
-                    this.kidElement.setAttribute("transform", `translate(${this.kidOffsetX}, -30) scale(3.5)`);
+                    this.kidElement.setAttribute("transform", `translate(${this.kidOffsetX}, -30) scale(2.4)`);
                 }
             } else if (this.barrierState === 'crack') {
                 this.animTimer++;
