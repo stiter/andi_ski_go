@@ -819,7 +819,10 @@ class Game {
         this.countdownDisplay.classList.add('hidden');
         
         if (moveDir !== 0) {
-            this.player.move(moveDir * CONFIG.PLAYER_SPEED);
+            // Reduced sensitivity for mobile touch controls to make steering smoother
+            // isMobile check is already available globally
+            const speed = isMobile ? CONFIG.PLAYER_SPEED * 0.7 : CONFIG.PLAYER_SPEED;
+            this.player.move(moveDir * speed);
         }
 
         this.player.update(deltaTime);
