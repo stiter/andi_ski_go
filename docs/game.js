@@ -306,6 +306,9 @@ class Game {
         this.setupInputs();
         this.setupMobileControls();
         
+        // Hide mobile controls initially
+        document.getElementById('mobile-controls').style.display = 'none';
+
         this.startBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             this.audio.init();
@@ -465,6 +468,7 @@ class Game {
 
     startGame() {
         this.startScreen.classList.add('hidden');
+        document.getElementById('mobile-controls').style.display = 'flex'; // Show controls
         this.state = 'PLAYING';
         this.audio.start();
         this.lastTime = performance.now();
@@ -476,6 +480,7 @@ class Game {
         this.gameOverScreen.classList.add('hidden');
         this.victoryScreen.classList.add('hidden');
         this.startScreen.classList.add('hidden');
+        document.getElementById('mobile-controls').style.display = 'flex'; // Show controls
         
         this.obstacles.forEach(obs => obs.element.remove());
         this.obstacles = [];
@@ -1153,6 +1158,7 @@ class Game {
     
     gameOver() {
         this.state = 'GAMEOVER';
+        document.getElementById('mobile-controls').style.display = 'none'; // Hide controls
         this.audio.stop();
         this.gameOverScreen.classList.remove('hidden');
         this.finalScoreElement.textContent = Math.floor(this.distance) + 'm';
@@ -1160,6 +1166,7 @@ class Game {
 
     victory() {
         this.state = 'VICTORY';
+        document.getElementById('mobile-controls').style.display = 'none'; // Hide controls
         this.audio.stop();
         this.victoryScreen.classList.remove('hidden');
     }
