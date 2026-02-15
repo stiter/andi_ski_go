@@ -178,13 +178,26 @@ body {
 
 #instructions {
     position: absolute;
-    top: 20px; /* Moved to top */
-    left: 20px;
-    background: rgba(0, 0, 0, 0.5);
-    color: white;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(255, 255, 255, 0.8);
     padding: 10px 20px;
     border-radius: 20px;
-    font-size: 14px;
+    font-size: 16px;
+    color: #333;
+    pointer-events: none;
+    z-index: 10;
+}
+
+@media screen and (max-width: 600px) {
+    #instructions {
+        font-size: 12px;
+        padding: 5px 10px;
+        width: 90%;
+        text-align: center;
+        top: 10px;
+    }
 }
 
 #countdown-display {

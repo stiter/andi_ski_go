@@ -339,6 +339,8 @@ class Game {
         };
 
         const updateSteering = (touches) => {
+            if (this.state !== 'PLAYING') return; // Deactivate controls if not playing
+
             let pressingLeft = false;
             let pressingRight = false;
 
@@ -451,7 +453,8 @@ class Game {
 
         // Jump Button
         const triggerJump = (btn) => {
-             if(this.state === 'PLAYING') this.player.jump();
+             if(this.state !== 'PLAYING') return; // Deactivate jump if not playing
+             this.player.jump();
              btn.classList.add('active');
              setTimeout(() => btn.classList.remove('active'), 200); // Visual feedback
         };
