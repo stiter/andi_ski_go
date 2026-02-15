@@ -513,7 +513,7 @@ class Game {
             if (this.keys.hasOwnProperty(e.code)) {
                 this.keys[e.code] = true;
             }
-            if ((e.code === 'Space' || e.code === 'KeyW') && this.state === 'PLAYING') {
+            if ((e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp') && this.state === 'PLAYING') {
                 this.player.jump();
             }
         });
