@@ -342,8 +342,8 @@ class Game {
         // Screen-wide touch handling
         // Divide screen into left/right halves for steering if not touching a specific button
         gameContainer.addEventListener('touchstart', (e) => {
-            // Don't interfere if touching specific buttons
-            if (e.target.closest('.ctrl-btn')) return;
+            // Don't interfere if touching specific buttons or UI elements like Start/Restart
+            if (e.target.closest('.ctrl-btn') || e.target.closest('button')) return;
             
             e.preventDefault();
             // In rotated view (landscape on phone), width is height and height is width.
@@ -398,7 +398,7 @@ class Game {
         }, {passive: false});
 
         gameContainer.addEventListener('touchend', (e) => {
-             if (e.target.closest('.ctrl-btn')) return;
+             if (e.target.closest('.ctrl-btn') || e.target.closest('button')) return;
              e.preventDefault();
              // We need to know which key to release.
              // Since we don't track touch IDs perfectly here without a map,
