@@ -548,7 +548,8 @@ class Game {
         obstacle.kidOffsetX = x - this.pathCenter;
         obstacle.updateKidPosition();
         this.obstacles.push(obstacle);
-        this.slopeGroup.appendChild(obstacle.element);
+        // Append to playerGroup so it renders ON TOP of trees/rocks (prevent hiding)
+        this.playerGroup.appendChild(obstacle.element);
     }
     
     spawnObstacle() {
